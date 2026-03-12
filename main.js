@@ -103,12 +103,10 @@ function getIdleTime(startTime, endTime) {
     if (endSec <= startSec) endSec += 24 * 3600; // crosses midnight
  
     let idleSec = 0;
- 
     // Time before delivery window
     if (startSec < WINDOW_START) {
         idleSec += Math.min(endSec, WINDOW_START) - startSec;
     }
- 
     // Time after delivery window
     if (endSec > WINDOW_END) {
         idleSec += endSec - Math.max(startSec, WINDOW_END);
