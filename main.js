@@ -1,5 +1,79 @@
-const fs = require("fs");
-
+// ─────────────────────────────────────────────────────────────
+// SHARED HELPERS
+// ─────────────────────────────────────────────────────────────
+ 
+/** Parse "h:mm:ss am/pm" → total seconds since midnight */
+function parseAmPmToSeconds(timeStr) {
+    timeStr = timeStr.trim().toLowerCase();
+    const isPM = timeStr.endsWith("pm");
+    const isAM = timeStr.endsWith("am");
+    const timePart = timeStr.slice(0, -2).trim();
+    const [h, m, s] = timePart.split(":").map(Number);
+    let hours = h;
+    if (isPM && hours !== 12) hours += 12;
+    if (isAM && hours === 12) hours = 0;
+    return hours * 3600 + m * 60 + s;
+}
+ 
+/** Parse "h:mm:ss" or "hhh:mm:ss" → total seconds */
+function hmsToSeconds(hms) {
+    const [h, m, s] = hms.split(":").map(Number);
+    return h * 3600 + m * 60 + s;
+}
+ 
+/** Format total seconds → "h:mm:ss" (hours NOT zero-padded) */
+function secondsToHms(totalSec) {
+    totalSec = Math.max(0, totalSec);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+ 
+/** Format total seconds → "hhh:mm:ss" (hours zero-padded to 3 digits) */
+function secondsToHHHmmss(totalSec) {
+    totalSec = Math.max(0, totalSec);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return `${String(h).padStart(3, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+ 
+/**
+ * Read shifts.txt into an array of trimmed, non-empty lines,
+ * automatically skipping a header line if one exists
+ * (detected by the first column not starting with a digit or letter 'D').
+ */
+function readShiftLines(textFile) {
+    if (!fs.existsSync(textFile)) return [];
+    const lines = fs.readFileSync(textFile, "utf8")
+        .split("\n")
+        .map(l => l.trim())
+        .filter(l => l.length > 0);
+    // Skip header: header first column is "DriverID" (not an actual ID)
+    if (lines.length > 0 && lines[0].split(",")[0].trim().toLowerCase() === "driverid") {
+        lines.shift();
+    }
+    return lines;
+}
+ 
+/**
+ * Read driverRates.txt and return the row for a given driverID as an array,
+ * or null if not found.
+ * Columns: DriverID, DayOff, BasePay, Tier
+ */
+function readRateLine(rateFile, driverID) {
+    if (!fs.existsSync(rateFile)) return null;
+    const lines = fs.readFileSync(rateFile, "utf8")
+        .split("\n")
+        .map(l => l.trim())
+        .filter(l => l.length > 0);
+    for (const line of lines) {
+        const cols = line.split(",");
+        if (cols[0].trim() === driverID) return cols.map(c => c.trim());
+    }
+    return null;
+}
 // ============================================================
 // Function 1: getShiftDuration(startTime, endTime)
 // startTime: (typeof string) formatted as hh:mm:ss am or hh:mm:ss pm
