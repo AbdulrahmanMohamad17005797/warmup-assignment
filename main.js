@@ -95,7 +95,26 @@ function getShiftDuration(startTime, endTime) {
 // Returns: string formatted as h:mm:ss
 // ============================================================
 function getIdleTime(startTime, endTime) {
-    // TODO: Implement this function
+    const WINDOW_START = 8  * 3600; // 08:00:00
+    const WINDOW_END   = 22 * 3600; // 22:00:00
+ 
+    let startSec = parseAmPmToSeconds(startTime);
+    let endSec   = parseAmPmToSeconds(endTime);
+    if (endSec <= startSec) endSec += 24 * 3600; // crosses midnight
+ 
+    let idleSec = 0;
+ 
+    // Time before delivery window
+    if (startSec < WINDOW_START) {
+        idleSec += Math.min(endSec, WINDOW_START) - startSec;
+    }
+ 
+    // Time after delivery window
+    if (endSec > WINDOW_END) {
+        idleSec += endSec - Math.max(startSec, WINDOW_END);
+    }
+ 
+    return secondsToHms(idleSec);
 }
 
 // ============================================================
@@ -105,7 +124,7 @@ function getIdleTime(startTime, endTime) {
 // Returns: string formatted as h:mm:ss
 // ============================================================
 function getActiveTime(shiftDuration, idleTime) {
-    // TODO: Implement this function
+    
 }
 
 // ============================================================
@@ -115,7 +134,7 @@ function getActiveTime(shiftDuration, idleTime) {
 // Returns: boolean
 // ============================================================
 function metQuota(date, activeTime) {
-    // TODO: Implement this function
+    
 }
 
 // ============================================================
