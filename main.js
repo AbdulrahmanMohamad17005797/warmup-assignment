@@ -81,7 +81,11 @@ function readRateLine(rateFile, driverID) {
 // Returns: string formatted as h:mm:ss
 // ============================================================
 function getShiftDuration(startTime, endTime) {
-    // TODO: Implement this function
+    const startSec = parseAmPmToSeconds(startTime);
+    const endSec   = parseAmPmToSeconds(endTime);
+    let diffSec = endSec - startSec;
+    if (diffSec < 0) diffSec += 24 * 3600; // crosses midnight
+    return secondsToHms(diffSec);
 }
 
 // ============================================================
